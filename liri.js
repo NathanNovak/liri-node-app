@@ -1,52 +1,152 @@
 require("dotenv").config();
-
-var Twitter = require("twitter");
-var Spotify = require("node-spotify-api");
-
 var keys = require("./keys.js");
-
+var Spotify = require("node-spotify-api");
+var Twitter = require("twitter");
+var request = require("request");
 var client = new Twitter(keys.twitter);
 var spotify = new Spotify(keys.spotify);
-console.log(client);
-console.log("----------------------");
-console.log(spotify);
+var fs = require("fs");
 
+// console.log(client);
+// console.log("----------------------");
+// console.log(spotify);
 
-// spotify.search({ type: 'track', query: 'friends in low places' }, function(err, data, response) {
-//     if (err) {
-//       return console.log('Error occurred: ' + err);
-//     }
+var action = process.argv[2];
+var input = process.argv;
+var inputs = "";
 
-//   console.log("Here's a preview: " + data.tracks.items[0].preview_url);
-//   console.log("Here's the album name: " + data.tracks.items[0].album.name);
-//   console.log("Here's the song name: " + data.tracks.items[0].name);
-//   console.log("Popularity score " + data.tracks.items[0].popularity);
-//   });
+//Action calls from terminal
+switch (action) {
+  case "my-tweets":
+    console.log("TWEETS");
+    tweetResults();
+    break;
 
-// spotify
-//   .request('https://api.spotify.com/v1/tracks/7yCPwWs66K8Ba5lFuU2bcx')
-//   .then(function(data) {
-//     console.log(data); 
-//   })
-//   .catch(function(err) {
-//     console.error('Error occurred: ' + err); 
-//   });
+  case "spotify-this-song":
+    multipleArgs();
+    console.log("Song", inputs);
+    if (inputs != "") {
+      spotifyResults(inputs);
+    } else {
+      spotifyResults("lose it");
+    }
+    break;
 
-var params = {
-  q: 'NathanNovak16'
-};
+  case "movie-this":
+    multipleArgs();
+    console.log("Movie", inputs);
+    if (inputs != "") {
+      omdbResults(inputs);
+    } else {
+      omdbResults("Mr. Nobody");
+    }
 
-client.get("search/tweets", params, function(error, tweets, response){
-  if (!error){
-    console.log(tweets);
+    break;
+}
+
+//Used for multiple word searches
+function multipleArgs() {
+  for (var i = 3; i < input.length; i++) {
+    if (i > 3 && input.length) {
+      inputs = inputs + "+" + input[i];
+    } else {
+      inputs = inputs + input[i];
+    }
   }
-}); 
-// get is the function to search the tweet which three paramaters 'search/tweets'
-// ,params and a callback function.
+}
 
-// function searchedData(err, data, response) {
-  
-//   }
-//   console.log("TWEETS", data);
-// } // searchedData function is a callback function which
-// // returns the data when we make a search
+function omdbResults(movie) {
+  var queryUrl = "http://www.omdbapi.com/?apikey=trilogy&t=" + movie;
+  console.log(queryUrl);
+  request(queryUrl, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      // console.log(JSON.parse(body));
+      console.log("\nTitle of the movie: " + JSON.parse(body).Title);
+      console.log("\nYear the movie came out: " + JSON.parse(body).Year);
+      console.log(
+        "\nIMDB Rating of the movie: " + JSON.parse(body).Ratings[0].Value
+      );
+      console.log(
+        "\nRotton Tomatos rating of the movie: " +
+          JSON.parse(body).Ratings[1].Value
+      );
+      console.log(
+        "\nCountry where the movie was produced: " + JSON.parse(body).Country
+      );
+      console.log("\nLanguage of movie: " + JSON.parse(body).Language);
+      console.log("\nPlot of the movie: " + JSON.parse(body).Plot);
+      console.log("\nActors in the movie: " + JSON.parse(body).Actors);
+    } else {
+      console.log("Error....Try again.");
+    }
+    if (movie === "Mr. Nobody") {
+      console.log(
+        "\nIf you haven't watched 'Mr. Nobody,' then you should: http://www.imdb.com/title/tt0485947/"
+      );
+      console.log("\nIt's on Netflix!");
+    }
+  });
+}
+
+function spotifyResults(song) {
+  //Spotify API request
+  console.log(song);
+  spotify.search({ type: "track", query: song }, function(err, data, response) {
+    // if (err) {
+    //   return console.log("Error occurred: " + err);
+    // }
+    // if (song != "Ace of Base") {
+      for (var j = 0; j < inputs.length; j++) {
+        var songResults = data.tracks.items[j];
+
+        console.log(data);
+        console.log("----------------------------------------------------");
+        console.log("Artist: " + songResults.artists[0].name);
+        console.log("Song title: " + songResults.name);
+        console.log("Preview: " + songResults.preview_url);
+        console.log("Album name: " + songResults.album.name);
+        console.log("----------------------------------------------------");
+      }
+    // }
+    // else if (song == "Ace of Base") {
+    //   spotify.search({ type: "artist", query: song }, function(err, data, response) {
+        
+    //       // for (var i = 0; i < inputs.length; i++) {
+    //         var songResults = data.tracks.items[0];
+
+    //         // console.log(songResults);
+    //         console.log("----------------------------------------------------");
+    //         console.log("Artist: " + songResults.artists[0].name);
+    //         console.log("Song title: " + songResults.name);
+    //         console.log("Preview: " + songResults.preview_url);
+    //         console.log("Album name: " + songResults.album.name);
+    //         console.log("----------------------------------------------------");
+    //       // }       
+    //   });
+    // }
+  });
+}
+
+function tweetResults(inputs) {
+  //Twitter API request
+  var username = process.argv[3];
+  var params = {
+    screen_name: username,
+    count: 20
+  };
+  client.get("statuses/user_timeline", params, function(
+    error,
+    tweets,
+    response
+  ) {
+    if (!error) {
+      for (var i = 0; i < tweets.length; i++) {
+        console.log("Done at " + tweets[i].created_at + ".");
+        console.log("My tweet: " + tweets[i].text + ".");
+        console.log("");
+      }
+    } else {
+      console.log(error);
+    }
+  });
+}
