@@ -28,7 +28,7 @@ switch (action) {
     if (inputs != "") {
       spotifyResults(inputs);
     } else {
-      spotifyResults("lose it");
+      spotifyResults("The Sign");
     }
     break;
 
@@ -42,6 +42,16 @@ switch (action) {
     }
 
     break;
+
+  case "do-what-it-says":
+    doWhatItSays();
+    break;
+
+  default:
+    console.log(
+      "{Please enter a command: my-tweets, spotify-this-song, movie-this, do-what-it-says}"
+    );
+    break;
 }
 
 //Used for multiple word searches
@@ -53,6 +63,20 @@ function multipleArgs() {
       inputs = inputs + input[i];
     }
   }
+}
+
+function doWhatItSays() {
+  fs.readFile("random.txt", "utf8", function(err, data) {
+     console.log(data);
+
+      var text = data.split(",");
+      console.log(text[1]);
+    
+      spotifyResults(text[1]);
+    
+
+  });
+  
 }
 
 function omdbResults(movie) {
@@ -91,15 +115,17 @@ function omdbResults(movie) {
 function spotifyResults(song) {
   //Spotify API request
   console.log(song);
-  spotify.search({ type: "track", query: song }, function(err, data, response) {
-    // if (err) {
-    //   return console.log("Error occurred: " + err);
-    // }
-    // if (song != "Ace of Base") {
-      for (var j = 0; j < inputs.length; j++) {
+  // if (err) {
+  //   return console.log("Error occurred: " + err);
+  // }
+  spotify.search({ type: "track", query: song, limit: 20 }, function(
+    err, data, response){
+  if (song != "The Sign") {
+ 
+      for (var j = 0; j < data.tracks.items.length; j++) {
         var songResults = data.tracks.items[j];
 
-        console.log(data);
+        // console.log(data);
         console.log("----------------------------------------------------");
         console.log("Artist: " + songResults.artists[0].name);
         console.log("Song title: " + songResults.name);
@@ -107,24 +133,25 @@ function spotifyResults(song) {
         console.log("Album name: " + songResults.album.name);
         console.log("----------------------------------------------------");
       }
-    // }
-    // else if (song == "Ace of Base") {
-    //   spotify.search({ type: "artist", query: song }, function(err, data, response) {
-        
-    //       // for (var i = 0; i < inputs.length; i++) {
-    //         var songResults = data.tracks.items[0];
+   
+  } else{
+    spotify.search({ type: "track", query: "The Sign" }, function(
+      err,
+      data,
+      response
+    ) {
+      var songResults = data.tracks.items[5];
 
-    //         // console.log(songResults);
-    //         console.log("----------------------------------------------------");
-    //         console.log("Artist: " + songResults.artists[0].name);
-    //         console.log("Song title: " + songResults.name);
-    //         console.log("Preview: " + songResults.preview_url);
-    //         console.log("Album name: " + songResults.album.name);
-    //         console.log("----------------------------------------------------");
-    //       // }       
-    //   });
-    // }
-  });
+      // console.log(songResults);
+      console.log("----------------------------------------------------");
+      console.log("Artist: " + songResults.artists[0].name);
+      console.log("Song title: " + songResults.name);
+      console.log("Preview: " + songResults.preview_url);
+      console.log("Album name: " + songResults.album.name);
+      console.log("----------------------------------------------------");
+    });
+  }
+});
 }
 
 function tweetResults(inputs) {
