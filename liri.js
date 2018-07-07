@@ -18,13 +18,13 @@ var inputs = "";
 //Action calls from terminal
 switch (action) {
   case "my-tweets":
-    console.log("TWEETS");
+    console.log("------TWEETS------");
     tweetResults();
     break;
 
   case "spotify-this-song":
+  console.log("------SPOTIFY------");
     multipleArgs();
-    console.log("Song", inputs);
     if (inputs != "") {
       spotifyResults(inputs);
     } else {
@@ -33,8 +33,8 @@ switch (action) {
     break;
 
   case "movie-this":
+  console.log("------MOVIE------");
     multipleArgs();
-    console.log("Movie", inputs);
     if (inputs != "") {
       omdbResults(inputs);
     } else {
@@ -44,6 +44,7 @@ switch (action) {
     break;
 
   case "do-what-it-says":
+  console.log("------DO WHAT IT SAYS------");
     doWhatItSays();
     break;
 
@@ -67,33 +68,23 @@ function multipleArgs() {
 
 function doWhatItSays() {
   fs.readFile("random.txt", "utf8", function(err, data) {
-     console.log(data);
-
-      var text = data.split(",");
-      console.log(text[1]);
-    
-      spotifyResults(text[1]);
-    
-
+    var text = data.split(",");
+    console.log(text[1]);
+    spotifyResults(text[1]);
   });
-  
 }
 
 function omdbResults(movie) {
   var queryUrl = "http://www.omdbapi.com/?apikey=trilogy&t=" + movie;
-  console.log(queryUrl);
+  
   request(queryUrl, function(error, response, body) {
     if (!error && response.statusCode === 200) {
-      var movieData = JSON.parse(body)
-      // console.log(JSON.parse(body));
+      var movieData = JSON.parse(body);
       console.log("\nTitle of the movie: " + movieData.Title);
       console.log("\nYear the movie came out: " + movieData.Year);
+      console.log("\nIMDB Rating of the movie: " + movieData.Ratings[0].Value);
       console.log(
-        "\nIMDB Rating of the movie: " + movieData.Ratings[0].Value
-      );
-      console.log(
-        "\nRotton Tomatos rating of the movie: " +
-          movieData.Ratings[1].Value
+        "\nRotton Tomatos rating of the movie: " + movieData.Ratings[1].Value
       );
       console.log(
         "\nCountry where the movie was produced: " + movieData.Country
@@ -102,19 +93,22 @@ function omdbResults(movie) {
       console.log("\nPlot of the movie: " + movieData.Plot);
       console.log("\nActors in the movie: " + movieData.Actors);
 
-      fs.appendFileSync('log.txt', "\n========================================");
-      fs.appendFileSync('log.txt', "\n"+movieData.Title);
-      fs.appendFileSync('log.txt', "\n"+movieData.Year);
-      fs.appendFileSync('log.txt', "\n"+movieData.Ratings[0].Value);
-      fs.appendFileSync('log.txt', "\n"+movieData.Ratings[1].Value);
-      fs.appendFileSync('log.txt', "\n"+movieData.Country);
-      fs.appendFileSync('log.txt', "\n"+movieData.Language);
-      fs.appendFileSync('log.txt', "\n"+movieData.Plot);
-      fs.appendFileSync('log.txt', "\n"+movieData.Actors);
-      fs.appendFileSync('log.txt', "\n=========================================");
-      
-      
-
+      fs.appendFileSync(
+        "log.txt",
+        "\n========================================"
+      );
+      fs.appendFileSync("log.txt", "\n" + movieData.Title);
+      fs.appendFileSync("log.txt", "\n" + movieData.Year);
+      fs.appendFileSync("log.txt", "\n" + movieData.Ratings[0].Value);
+      fs.appendFileSync("log.txt", "\n" + movieData.Ratings[1].Value);
+      fs.appendFileSync("log.txt", "\n" + movieData.Country);
+      fs.appendFileSync("log.txt", "\n" + movieData.Language);
+      fs.appendFileSync("log.txt", "\n" + movieData.Plot);
+      fs.appendFileSync("log.txt", "\n" + movieData.Actors);
+      fs.appendFileSync(
+        "log.txt",
+        "\n========================================="
+      );
     } else {
       console.log("Error....Try again.");
     }
@@ -124,27 +118,21 @@ function omdbResults(movie) {
       );
       console.log("\nIt's on Netflix!");
     }
-
-    
-
- 
-  } )
+  });
 }
 
 function spotifyResults(song) {
   //Spotify API request
   console.log(song);
-  // if (err) {
-  //   return console.log("Error occurred: " + err);
-  // }
   spotify.search({ type: "track", query: song, limit: 20 }, function(
-    err, data, response){
-  if (song != "The Sign") {
- 
+    err,
+    data,
+    response
+  ) {
+    if (song != "The Sign") {
       for (var j = 0; j < data.tracks.items.length; j++) {
         var songResults = data.tracks.items[j];
 
-        // console.log(data);
         console.log("----------------------------------------------------");
         console.log("Artist: " + songResults.artists[0].name);
         console.log("Song title: " + songResults.name);
@@ -152,25 +140,23 @@ function spotifyResults(song) {
         console.log("Album name: " + songResults.album.name);
         console.log("----------------------------------------------------");
       }
-   
-  } else{
-    spotify.search({ type: "track", query: "The Sign" }, function(
-      err,
-      data,
-      response
-    ) {
-      var songResults = data.tracks.items[5];
+    } else {
+      spotify.search({ type: "track", query: "The Sign" }, function(
+        err,
+        data,
+        response
+      ) {
+        var songResults = data.tracks.items[5];
 
-      // console.log(songResults);
-      console.log("----------------------------------------------------");
-      console.log("Artist: " + songResults.artists[0].name);
-      console.log("Song title: " + songResults.name);
-      console.log("Preview: " + songResults.preview_url);
-      console.log("Album name: " + songResults.album.name);
-      console.log("----------------------------------------------------");
-    });
-  }
-});
+        console.log("----------------------------------------------------");
+        console.log("Artist: " + songResults.artists[0].name);
+        console.log("Song title: " + songResults.name);
+        console.log("Preview: " + songResults.preview_url);
+        console.log("Album name: " + songResults.album.name);
+        console.log("----------------------------------------------------");
+      });
+    }
+  });
 }
 
 function tweetResults(inputs) {
