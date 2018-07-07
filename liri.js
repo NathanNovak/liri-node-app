@@ -84,22 +84,37 @@ function omdbResults(movie) {
   console.log(queryUrl);
   request(queryUrl, function(error, response, body) {
     if (!error && response.statusCode === 200) {
+      var movieData = JSON.parse(body)
       // console.log(JSON.parse(body));
-      console.log("\nTitle of the movie: " + JSON.parse(body).Title);
-      console.log("\nYear the movie came out: " + JSON.parse(body).Year);
+      console.log("\nTitle of the movie: " + movieData.Title);
+      console.log("\nYear the movie came out: " + movieData.Year);
       console.log(
-        "\nIMDB Rating of the movie: " + JSON.parse(body).Ratings[0].Value
+        "\nIMDB Rating of the movie: " + movieData.Ratings[0].Value
       );
       console.log(
         "\nRotton Tomatos rating of the movie: " +
-          JSON.parse(body).Ratings[1].Value
+          movieData.Ratings[1].Value
       );
       console.log(
-        "\nCountry where the movie was produced: " + JSON.parse(body).Country
+        "\nCountry where the movie was produced: " + movieData.Country
       );
-      console.log("\nLanguage of movie: " + JSON.parse(body).Language);
-      console.log("\nPlot of the movie: " + JSON.parse(body).Plot);
-      console.log("\nActors in the movie: " + JSON.parse(body).Actors);
+      console.log("\nLanguage of movie: " + movieData.Language);
+      console.log("\nPlot of the movie: " + movieData.Plot);
+      console.log("\nActors in the movie: " + movieData.Actors);
+
+      fs.appendFileSync('log.txt', "\n========================================");
+      fs.appendFileSync('log.txt', "\n"+movieData.Title);
+      fs.appendFileSync('log.txt', "\n"+movieData.Year);
+      fs.appendFileSync('log.txt', "\n"+movieData.Ratings[0].Value);
+      fs.appendFileSync('log.txt', "\n"+movieData.Ratings[1].Value);
+      fs.appendFileSync('log.txt', "\n"+movieData.Country);
+      fs.appendFileSync('log.txt', "\n"+movieData.Language);
+      fs.appendFileSync('log.txt', "\n"+movieData.Plot);
+      fs.appendFileSync('log.txt', "\n"+movieData.Actors);
+      fs.appendFileSync('log.txt', "\n=========================================");
+      
+      
+
     } else {
       console.log("Error....Try again.");
     }
@@ -109,7 +124,11 @@ function omdbResults(movie) {
       );
       console.log("\nIt's on Netflix!");
     }
-  });
+
+    
+
+ 
+  } )
 }
 
 function spotifyResults(song) {
